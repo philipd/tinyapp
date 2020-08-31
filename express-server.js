@@ -11,9 +11,19 @@ const urlDatabase = {
   '9sm5xK': 'http://www.google.com'
 };
 
-const generateRandomString = function () {
+const generateRandomString = function() {
+  const chars = '0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
+  const arrChars = Array.from(chars);
+  let result = '';
 
-}
+  for (let i = 0; i < 6; i++) {
+    let randomNumber = Math.random() * chars.length;
+    randomNumber = Math.floor(randomNumber);
+    result += arrChars[randomNumber];
+  }
+
+  return result;
+};
 
 app.get('/', (req, res) => {
   res.send('Hello!');
