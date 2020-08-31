@@ -62,3 +62,9 @@ app.post('/urls', (req, res) => {
   console.log(urlDatabase);
   res.redirect('/urls/'+id);
 });
+
+app.get('/u/:shortURL', (req, res) => {
+  let longURL = urlDatabase[req.params.shortURL];
+  console.log(longURL);
+  res.redirect(longURL)
+})
