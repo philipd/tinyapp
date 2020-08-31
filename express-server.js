@@ -7,12 +7,12 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const urlDatabase = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com"
 };
 
 const generateRandomString = function() {
-  const chars = '0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
+  const chars = '23456789qwertyuipasdfghjkzxcvbnmQWERTYUPASDFGHJKLZXCVBNM'; // no ambiguous characters (o, O, 0, I, l, 1)
   const arrChars = Array.from(chars);
   let result = '';
 
@@ -56,6 +56,9 @@ app.get('/urls/:shortURL', (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
+  let id = generateRandomString()
+  urlDatabase[id] = req.body.longURL;
   console.log(req.body);
-  res.send('Ok');
+  console.log(urlDatabase);
+  res.redirect('/urls/'+id);
 });
