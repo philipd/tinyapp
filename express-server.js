@@ -2,9 +2,11 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const app = express();
 const PORT = 8080;
+const morgan = require('morgan');
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(morgan('dev'));
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -56,15 +58,20 @@ app.get('/urls/:shortURL', (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
-  let id = generateRandomString()
+  let id = generateRandomString();
   urlDatabase[id] = req.body.longURL;
   console.log(req.body);
   console.log(urlDatabase);
-  res.redirect('/urls/'+id);
+  res.redirect('/urls/' + id);
 });
 
 app.get('/u/:shortURL', (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
   console.log(longURL);
-  res.redirect(longURL)
-})
+  res.redirect(longURL);
+});
+
+app.post('/urls/:shortURL/delete', (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect('/urls');
+});
