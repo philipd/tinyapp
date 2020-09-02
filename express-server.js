@@ -57,6 +57,11 @@ app.get('/urls/:shortURL', (req, res) => {
   res.render('urls-show', templateVars);
 });
 
+app.post('/login', (req, res) => {
+  res.cookie('name', req.body.username);
+  res.redirect('/urls');
+});
+
 app.post('/urls/:shortURL', (req, res) => {
   console.log(req.params.shortURL);
   const id = req.params.shortURL;
