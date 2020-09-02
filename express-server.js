@@ -1,11 +1,13 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const app = express();
-const PORT = 8080;
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
+const PORT = 8080;
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(morgan('dev'));
 
 const urlDatabase = {
@@ -33,7 +35,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`TinyApp listening on port ${PORT}!`);
 });
 
 app.get('/urls.json', (req, res) => {
@@ -45,21 +47,35 @@ app.get('/hello', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  // let username;
+  // if (req.cookies)
+  //   username = req.cookies['username'];
+  let templateVars = { urls: urlDatabase, username: req.cookies.username };
   res.render('urls-index', templateVars);
 });
 
 app.get('/urls/new', (req, res) => {
-  res.render('urls-new');
+  // let username;
+  // if (req.cookies)
+  //   username = req.cookies['username'];
+  let templateVars = { username: req.cookies.username };
+  res.render('urls-new', templateVars);
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  // let username;
+  // if (req.cookies)
+  //   username = req.cookies['username'];
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username };
   res.render('urls-show', templateVars);
 });
 
+app.post('/login', (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect('/urls');
+});
+
 app.post('/urls/:shortURL', (req, res) => {
-  console.log(req.params.shortURL);
   const id = req.params.shortURL;
   urlDatabase[id] = req.body.longURL;
   res.redirect('/urls/' + id);
@@ -73,7 +89,6 @@ app.post('/urls', (req, res) => {
 
 app.get('/u/:shortURL', (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
-  console.log(longURL);
   res.redirect(longURL);
 });
 
