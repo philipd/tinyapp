@@ -15,6 +15,8 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {};
+
 const generateRandomString = function() {
   const chars = '23456789qwertyuipasdfghjkzxcvbnmQWERTYUPASDFGHJKLZXCVBNM'; // no ambiguous characters (o, O, 0, I, l, 1)
   const arrChars = Array.from(chars);
@@ -42,28 +44,48 @@ app.get('/urls.json', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  let templateVars = { urls: urlDatabase, username: req.cookies.username };
+  const user_id = req.cookies.user_id;
+  const user = users[user_id];
+  let templateVars = { urls: urlDatabase, user };
   res.render('urls-index', templateVars);
 });
 
 app.get('/urls/new', (req, res) => {
-  let templateVars = { username: req.cookies.username };
+  const user_id = req.cookies.user_id;
+  const user = users[user_id];
+  let templateVars = { user };
   res.render('urls-new', templateVars);
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username };
+  const user_id = req.cookies.user_id;
+  const user = users[user_id];
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user };
   res.render('urls-show', templateVars);
 });
 
+app.get('/register', (req, res) => {
+  const user_id = req.cookies.user_id;
+  const user = users[user_id];
+  let templateVars = { user };
+  res.render('user-registration', templateVars);
+});
+
+app.post('/register', (req, res) => {
+  const uid = generateRandomString();
+  users[uid] = { id: uid, email: req.body.email, password: req.body.password };
+  console.log(users);
+  res.cookie('user_id', uid);
+  res.redirect('/urls');
+});
+
 app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username);
+  res.cookie('user_id', req.body.user_id);
   res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
-  // res.cookie('username', req.body.username);
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
