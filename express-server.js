@@ -17,6 +17,17 @@ const urlDatabase = {
 
 const users = {};
 
+const findUsersByEmail = function(email) {
+  let results = [];
+  for (const user_id in users) {
+    const user = users[user_id];
+    if (user.email === email) {
+      results.push(user);
+    }
+  }
+  return results;
+};
+
 const generateRandomString = function() {
   const chars = '23456789qwertyuipasdfghjkzxcvbnmQWERTYUPASDFGHJKLZXCVBNM'; // no ambiguous characters (o, O, 0, I, l, 1)
   const arrChars = Array.from(chars);
@@ -72,9 +83,23 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  if(email.length===0 || password.length===0) {
+    console.log('ERROR! EMPTY EMAIL OR PASSWORD');
+    res.status(400);
+    return res.send('You must supply an email and a password');
+  }
+  
+  if (findUsersByEmail(email).length !== 0) {
+    console.log('ERROR! ALREADY EXISTS', email);
+    res.status(400);
+    return res.send('A user with that email already exists');
+  }
+
   const uid = generateRandomString();
   users[uid] = { id: uid, email: req.body.email, password: req.body.password };
-  console.log(users);
   res.cookie('user_id', uid);
   res.redirect('/urls');
 });
