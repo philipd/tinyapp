@@ -30,7 +30,6 @@ const generateRandomString = function() {
 };
 
 app.get('/', (req, res) => {
-  // res.send('Hello!');
   res.redirect('/urls');
 });
 
@@ -42,30 +41,17 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get('/hello', (req, res) => {
-  res.send('<html><body>Hello <b>World</b></body></html>\n');
-});
-
 app.get('/urls', (req, res) => {
-  // let username;
-  // if (req.cookies)
-  //   username = req.cookies['username'];
   let templateVars = { urls: urlDatabase, username: req.cookies.username };
   res.render('urls-index', templateVars);
 });
 
 app.get('/urls/new', (req, res) => {
-  // let username;
-  // if (req.cookies)
-  //   username = req.cookies['username'];
   let templateVars = { username: req.cookies.username };
   res.render('urls-new', templateVars);
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  // let username;
-  // if (req.cookies)
-  //   username = req.cookies['username'];
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username };
   res.render('urls-show', templateVars);
 });
