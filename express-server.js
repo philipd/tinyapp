@@ -82,31 +82,46 @@ app.get('/register', (req, res) => {
   res.render('user-registration', templateVars);
 });
 
+app.get('/login', (req, res) => {
+  const user_id = req.cookies.user_id;
+  const user = users[user_id];
+  let templateVars = { user };
+  res.render('user-login', templateVars);
+});
+
 app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  if(email.length===0 || password.length===0) {
+  if (email.length === 0 || password.length === 0) {
     console.log('ERROR! EMPTY EMAIL OR PASSWORD');
     res.status(400);
     return res.send('You must supply an email and a password');
   }
-  
+
   if (findUsersByEmail(email).length !== 0) {
     console.log('ERROR! ALREADY EXISTS', email);
     res.status(400);
     return res.send('A user with that email already exists');
   }
 
-  const uid = generateRandomString();
-  users[uid] = { id: uid, email: req.body.email, password: req.body.password };
-  res.cookie('user_id', uid);
+  const user_id = generateRandomString();
+  users[user_id] = { user_id: user_id, email: req.body.email, password: req.body.password };
+  res.cookie('user_id', user_id);
   res.redirect('/urls');
 });
 
 app.post('/login', (req, res) => {
-  res.cookie('user_id', req.body.user_id);
-  res.redirect('/urls');
+  const password = req.body.password;
+  const email = req.body.email;
+  const user = findUsersByEmail(email)[0];
+  console.log(user);
+  if (!user || user.password !== password) {
+    res.status(403);
+    return res.send('Invalid credentials');
+  }
+  res.cookie('user_id', user.user_id);
+  return res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
