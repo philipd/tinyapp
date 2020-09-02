@@ -28,7 +28,8 @@ const generateRandomString = function() {
 };
 
 app.get('/', (req, res) => {
-  res.send('Hello!');
+  // res.send('Hello!');
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {
