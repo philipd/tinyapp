@@ -14,8 +14,8 @@ const idLength = 6;
 
 // Sample data
 const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", user_id: "aJ48lW", visits: 0, visitors: [] },
-  "9sm5xK": { longURL: "http://www.google.com", user_id: "aJ48lW", visits: 0, visitors: [] }
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", user_id: "aJ48lW", visits: 0, visitors: [], timestamp: 1599166494},
+  "9sm5xK": { longURL: "http://www.google.com", user_id: "aJ48lW", visits: 0, visitors: [], timestamp: 1590152331 }
 };
 const users = {
   'aJ48lW': { user_id: 'aJ48lW', email: 's@s.com', password: bcrypt.hashSync('asdf', saltRounds) }
@@ -162,22 +162,23 @@ app.post('/urls/:shortURL', (req, res) => {
   }
 
   urlDatabase[urlID].longURL = req.body.longURL;
-  urlDatabase[urlID].user_id = req.session.user_id;
-  urlDatabase[urlID].visits = 0;
-  urlDatabase[urlID].visitors = [];
 
   res.redirect('/urls/');
 });
 
 app.post('/urls', (req, res) => {
-  let id = generateRandomString(idLength);
+  let urlID = generateRandomString(idLength);
 
   if (!req.session.user_id) {
     res.status(403);
     return res.send("You must log in to create shortened urls");
   }
-
-  urlDatabase[id] = { longURL: req.body.longURL, user_id: req.session.user_id };
+  urlDatabase[urlID] = {};
+  urlDatabase[urlID].longURL = req.body.longURL;
+  urlDatabase[urlID].user_id = req.session.user_id;
+  urlDatabase[urlID].visits = 0;
+  urlDatabase[urlID].visitors = [];
+  urlDatabase[urlID].timestamp = Date.now();
   res.redirect('/urls/');
 });
 

@@ -17,6 +17,7 @@
         <tr>
           <th scope="col">Short URL</th>
           <th scope="col">Long URL</th>
+          <th scope="col">Created On</th>
           <th scope="col">Total Visits</th>
           <th scope="col">Unique Visitors</th>
           <th scope="col">Edit</th>
@@ -28,6 +29,7 @@
           <tr>
             <td><%= url %></td>
             <td><%= urls[url].longURL %></td>
+            <td><%= ( new Date(urls[url].timestamp*1000)).toDateString() %></td>
             <td><%= urls[url].visits %></td>
             <td><%= urls[url].visitors.length %></td>
             <td><form method='GET' action="/urls/<%= url %>"><button type="submit" class="btn btn-primary">Edit</button></form></td>
