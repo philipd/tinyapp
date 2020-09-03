@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
-const { findUsersByEmail, urlsForUser, generateRandomString } = require('./helpers');
+const { findUserByEmail, urlsForUser, generateRandomString } = require('./helpers');
 
 const PORT = 8080;
 const saltRounds = 10;
@@ -85,7 +85,7 @@ app.post('/register', (req, res) => {
     return res.send('You must supply an email and a password');
   }
 
-  if (findUsersByEmail(email, users).length !== 0) {
+  if (findUserByEmail(email, users) !== undefined) {
     res.status(400);
     return res.send('A user with that email already exists');
   }
@@ -99,7 +99,7 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
   const password = req.body.password;
   const email = req.body.email;
-  const user = findUsersByEmail(email, users)[0];
+  const user = findUserByEmail(email, users);
   if (!user || !bcrypt.compareSync(password, user.password)) {
     res.status(403);
     return res.send('Invalid credentials');

@@ -1,12 +1,11 @@
-const findUsersByEmail = function (email, users) {
-  let results = [];
-  for (const user_id in users) {
-    const user = users[user_id];
-    if (user.email === email) {
-      results.push(user);
+const findUserByEmail = function (email, users) {
+    for (const user_id in users) {
+      const user = users[user_id];
+      if (user.email === email) {
+        return user;
+      }
     }
-  }
-  return results;
+  return undefined;
 };
 
 const urlsForUser = function (user_id, urlDatabase) {
@@ -33,4 +32,4 @@ const generateRandomString = function () {
   return result;
 };
 
-module.exports = { findUsersByEmail, urlsForUser, generateRandomString };
+module.exports = { findUserByEmail: findUserByEmail, urlsForUser, generateRandomString };

@@ -1,5 +1,5 @@
 const { assert } = require('chai');
-const { findUsersByEmail } = require('../helpers.js');
+const { findUserByEmail } = require('../helpers.js');
 
 const testUsers = {
   "userRandomID": {
@@ -16,22 +16,16 @@ const testUsers = {
 
 describe('getUserByEmail', function () {
   it('should return a user with valid email', function () {
-    const actual = findUsersByEmail("user@example.com", testUsers)[0].id;
+    const actual = findUserByEmail("user@example.com", testUsers).id;
     const expected = "userRandomID";
     assert.equal(actual, expected);
   });
-  it('should return an array with a single value if a user exists with the given email', function () {
-    const actual = findUsersByEmail("user@example.com", testUsers);
-    assert.lengthOf(actual, 1);
+  it('should return undefined if no user is registered with the given email', function () {
+    const actual = findUserByEmail("user@gail.com", testUsers);
+    assert.isUndefined(actual);
   });
-  it('should return an empty array if no user is registered with the given email', function () {
-    const actual = findUsersByEmail("user@gail.com", testUsers);
-    assert.isArray(actual);
-    assert.isEmpty(actual);
-  });
-  it('should return an empty array if the user database provided is empty', function () {
-    const actual = findUsersByEmail("user@example.com", {});
-    assert.isArray(actual);
-    assert.isEmpty(actual);
+  it('should return undefined if the user database is empty', function () {
+    const actual = findUserByEmail("user@gail.com", {});
+    assert.isUndefined(actual);
   });
 });
