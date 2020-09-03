@@ -11,7 +11,7 @@ const { findUserByEmail, urlsForUser, generateRandomString } = require('./helper
 //////////////
 // Numerical constants
 //////////////
-const PORT = 8080;
+const PORT = process.argv[2] || 8080;
 const saltRounds = 10;
 const idLength = 6;
 
@@ -224,7 +224,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
     res.status(403);
     return res.send("You don't have permission to delete this URL");
   }
-  
+
   delete urlDatabase[req.params.shortURL];
 
   res.redirect('/urls');
