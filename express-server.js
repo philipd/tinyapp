@@ -3,7 +3,10 @@ const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
+
 const PORT = 8080;
+const saltRounds = 10;
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -107,6 +110,7 @@ app.get('/login', (req, res) => {
 app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, saltRounds);
 
   if (email.length === 0 || password.length === 0) {
     res.status(400);
@@ -119,7 +123,7 @@ app.post('/register', (req, res) => {
   }
 
   const user_id = generateRandomString();
-  users[user_id] = { user_id: user_id, email: req.body.email, password: req.body.password };
+  users[user_id] = { user_id: user_id, email: req.body.email, password: hashedPassword };
   res.cookie('user_id', user_id);
   res.redirect('/urls');
 });
@@ -128,7 +132,7 @@ app.post('/login', (req, res) => {
   const password = req.body.password;
   const email = req.body.email;
   const user = findUsersByEmail(email)[0];
-  if (!user || user.password !== password) {
+  if (user && bcrypt.compareSync(password, user.password)) {
     res.status(403);
     return res.send('Invalid credentials');
   }
