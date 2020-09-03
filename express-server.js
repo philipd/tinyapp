@@ -4,6 +4,7 @@ const app = express();
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
+const cookieSession = require('cookie-session');
 
 const PORT = 8080;
 const saltRounds = 10;
@@ -12,6 +13,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan('dev'));
+app.use(cookieSession({ secret: '#(*gnq3j(Q49f3unq93u'})); // TODO: store secret securely!
 
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", user_id: "aJ48lW" },
@@ -19,7 +21,7 @@ const urlDatabase = {
 };
 
 const users = {
-  'aJ48lW': { user_id: 'aJ48lW', email: 's@s.com', password: 'asdf' }
+  'aJ48lW': { user_id: 'aJ48lW', email: 's@s.com', password: bcrypt.hashSync('asdf', saltRounds) }
 };
 
 const findUsersByEmail = function (email) {
@@ -70,38 +72,38 @@ app.get('/urls.json', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const user_id = req.cookies.user_id;
+  const user_id = req.session.user_id;
   const user = users[user_id];
   let templateVars = { urls: urlsForUser(user_id), user };
   res.render('urls-index', templateVars);
 });
 
 app.get('/urls/new', (req, res) => {
-  if (!req.cookies.user_id) {
+  if (!req.session.user_id) {
     return res.redirect('/login');
   }
-  const user_id = req.cookies.user_id;
+  const user_id = req.session.user_id;
   const user = users[user_id];
   let templateVars = { user };
   res.render('urls-new', templateVars);
 });
 
 app.get('/urls/:shortURL', (req, res) => {
-  const user_id = req.cookies.user_id;
+  const user_id = req.session.user_id;
   const user = users[user_id];
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user };
   res.render('urls-show', templateVars);
 });
 
 app.get('/register', (req, res) => {
-  const user_id = req.cookies.user_id;
+  const user_id = req.session.user_id;
   const user = users[user_id];
   let templateVars = { user };
   res.render('user-registration', templateVars);
 });
 
 app.get('/login', (req, res) => {
-  const user_id = req.cookies.user_id;
+  const user_id = req.session.user_id;
   const user = users[user_id];
   let templateVars = { user };
   res.render('user-login', templateVars);
@@ -124,7 +126,7 @@ app.post('/register', (req, res) => {
 
   const user_id = generateRandomString();
   users[user_id] = { user_id: user_id, email: req.body.email, password: hashedPassword };
-  res.cookie('user_id', user_id);
+  req.session.user_id = user_id; //('user_id', user_id);
   res.redirect('/urls');
 });
 
@@ -132,38 +134,39 @@ app.post('/login', (req, res) => {
   const password = req.body.password;
   const email = req.body.email;
   const user = findUsersByEmail(email)[0];
-  if (user && bcrypt.compareSync(password, user.password)) {
+  if (!user ||  !bcrypt.compareSync(password, user.password)) {
     res.status(403);
     return res.send('Invalid credentials');
   }
-  res.cookie('user_id', user.user_id);
+  req.session.user_id = user.user_id;//('user_id', user.user_id);
   return res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  // res.clearCookie('user_id');
+  req.session = null;
   res.redirect('/urls');
 });
 
 app.post('/urls/:shortURL', (req, res) => {
   const urlID = req.params.shortURL;
-  const currentUser = req.cookies.user_id;
+  const currentUser = req.session.user_id;
   const urlOwner = urlDatabase[urlID].user_id;
-  
+
   if (currentUser !== urlOwner) {
     res.status(403);
     return res.send('Invalid credentials');
   }
 
   urlDatabase[urlID].longURL = req.body.longURL;
-  urlDatabase[urlID].user_id = req.cookies.user_id;
+  urlDatabase[urlID].user_id = req.session.user_id;
 
   res.redirect('/urls/' + urlID);
 });
 
 app.post('/urls', (req, res) => {
   let id = generateRandomString();
-  urlDatabase[id] = { longURL: req.body.longURL, user_id: req.cookies.user_id };
+  urlDatabase[id] = { longURL: req.body.longURL, user_id: req.session.user_id };
   res.redirect('/urls/' + id);
 });
 
@@ -173,9 +176,9 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const currentUser = req.cookies.user_id;
+  const currentUser = req.session.user_id;
   const urlOwner = urlDatabase[req.params.shortURL].user_id;
-  
+
   if (currentUser !== urlOwner) {
     res.status(403);
     return res.send('Invalid credentials');
