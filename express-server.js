@@ -14,8 +14,8 @@ const idLength = 6;
 
 // Sample data
 const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", user_id: "aJ48lW" },
-  "9sm5xK": { longURL: "http://www.google.com", user_id: "aJ48lW" }
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", user_id: "aJ48lW", visits: 0, visitors: [] },
+  "9sm5xK": { longURL: "http://www.google.com", user_id: "aJ48lW", visits: 0, visitors: [] }
 };
 const users = {
   'aJ48lW': { user_id: 'aJ48lW', email: 's@s.com', password: bcrypt.hashSync('asdf', saltRounds) }
@@ -41,15 +41,12 @@ app.get('/', (req, res) => {
   res.redirect('/urls');
 });
 
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
-
 app.get('/urls', (req, res) => {
   if (!req.session.user_id) {
     res.status(403);
     return res.send("You must log in to view shortened URLs");
   }
+
   const user_id = req.session.user_id;
   const user = users[user_id];
   let templateVars = { urls: urlsForUser(user_id, urlDatabase), user };
@@ -84,7 +81,7 @@ app.get('/urls/:shortURL', (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-  if(req.session.user_id){
+  if (req.session.user_id) {
     return res.redirect('/urls');
   }
   const user_id = req.session.user_id;
@@ -105,8 +102,14 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/u/:shortURL', (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
+  const shortURL = req.params.shortURL;
+  const url = urlDatabase[shortURL];
+
+  url.visits += 1;
+  if (!url.visitors.includes(req.ip)) {
+    url.visitors.push(req.ip);
+  }
+  res.redirect(url.longURL);
 });
 
 // POSTs
@@ -145,7 +148,7 @@ app.post('/login', (req, res) => {
 
 app.post('/logout', (req, res) => {
   req.session = null;
-  res.redirect('/urls');
+  res.redirect('/');
 });
 
 app.post('/urls/:shortURL', (req, res) => {
@@ -160,6 +163,8 @@ app.post('/urls/:shortURL', (req, res) => {
 
   urlDatabase[urlID].longURL = req.body.longURL;
   urlDatabase[urlID].user_id = req.session.user_id;
+  urlDatabase[urlID].visits = 0;
+  urlDatabase[urlID].visitors = [];
 
   res.redirect('/urls/');
 });
