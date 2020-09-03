@@ -6,6 +6,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
+const methodOverride = require('method-override');
 const { findUserByEmail, urlsForUser, generateRandomString } = require('./helpers');
 
 //////////////
@@ -34,6 +35,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 app.use(cookieSession({ secret: process.env.TINYAPP_SECRET || 'examplesecret59kjhwEF2h5WEF' }));
+app.use(methodOverride('_method'));
 
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
@@ -134,31 +136,6 @@ app.get('/u/:shortURL', (req, res) => {
 // POSTs
 //////////
 
-app.post('/register', (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  const hashedPassword = bcrypt.hashSync(password, saltRounds);
-
-  if (email.length === 0 || password.length === 0) {
-    res.status(400);
-    return res.send('You must supply an email and a password');
-  }
-
-  if (findUserByEmail(email, users) !== undefined) {
-    res.status(400);
-    return res.send('A user with that email already exists');
-  }
-
-  const user_id = generateRandomString(idLength);
-  users[user_id] = {
-    user_id,
-    email: req.body.email,
-    password: hashedPassword
-  };
-  req.session.user_id = user_id;
-  res.redirect('/urls');
-});
-
 app.post('/login', (req, res) => {
   const password = req.body.password;
   const email = req.body.email;
@@ -195,8 +172,38 @@ app.post('/urls/:shortURL', (req, res) => {
   res.redirect('/urls/');
 });
 
+//////////
+// PUTs
+//////////
+
+// Create a new user account
+app.put('/register', (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, saltRounds);
+
+  if (email.length === 0 || password.length === 0) {
+    res.status(400);
+    return res.send('You must supply an email and a password');
+  }
+
+  if (findUserByEmail(email, users) !== undefined) {
+    res.status(400);
+    return res.send('A user with that email already exists');
+  }
+
+  const user_id = generateRandomString(idLength);
+  users[user_id] = {
+    user_id,
+    email: req.body.email,
+    password: hashedPassword
+  };
+  req.session.user_id = user_id;
+  res.redirect('/urls');
+});
+
 // Create a new URL
-app.post('/urls', (req, res) => {
+app.put('/urls', (req, res) => {
   let urlID = generateRandomString(idLength);
 
   if (!req.session.user_id) {
@@ -215,8 +222,12 @@ app.post('/urls', (req, res) => {
   res.redirect('/urls/');
 });
 
+//////////
+// DELETEs
+//////////
+
 // Delete a URL
-app.post('/urls/:shortURL/delete', (req, res) => {
+app.delete('/urls/:shortURL', (req, res) => {
   const currentUser = req.session.user_id;
   const urlOwner = urlDatabase[req.params.shortURL].user_id;
 
