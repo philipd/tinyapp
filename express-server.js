@@ -19,7 +19,7 @@ const users = {
   'aJ48lW': { user_id: 'aJ48lW', email: 's@s.com', password: 'asdf' }
 };
 
-const findUsersByEmail = function(email) {
+const findUsersByEmail = function (email) {
   let results = [];
   for (const user_id in users) {
     const user = users[user_id];
@@ -30,18 +30,17 @@ const findUsersByEmail = function(email) {
   return results;
 };
 
-const urlsForUser = function(user_id) {
+const urlsForUser = function (user_id) {
   let result = {};
   for (const url in urlDatabase) {
     if (urlDatabase[url].user_id === user_id) {
       result[url] = urlDatabase[url];
     }
   }
-  console.log(result);
   return result;
 };
 
-const generateRandomString = function() {
+const generateRandomString = function () {
   const chars = '23456789qwertyuipasdfghjkzxcvbnmQWERTYUPASDFGHJKLZXCVBNM'; // no ambiguous characters (o, O, 0, I, l, 1)
   const arrChars = Array.from(chars);
   let result = '';
@@ -71,10 +70,6 @@ app.get('/urls', (req, res) => {
   const user_id = req.cookies.user_id;
   const user = users[user_id];
   let templateVars = { urls: urlsForUser(user_id), user };
-  // console.log('Users: ', users);
-  // console.log('user_id: ', user_id);
-  // console.log('urls: ', urlDatabase);
-  // console.log('urlsForThisUser: ', urlsForUser(user_id));
   res.render('urls-index', templateVars);
 });
 
@@ -114,13 +109,11 @@ app.post('/register', (req, res) => {
   const password = req.body.password;
 
   if (email.length === 0 || password.length === 0) {
-    console.log('ERROR! EMPTY EMAIL OR PASSWORD');
     res.status(400);
     return res.send('You must supply an email and a password');
   }
 
   if (findUsersByEmail(email).length !== 0) {
-    console.log('ERROR! ALREADY EXISTS', email);
     res.status(400);
     return res.send('A user with that email already exists');
   }
@@ -149,16 +142,24 @@ app.post('/logout', (req, res) => {
 });
 
 app.post('/urls/:shortURL', (req, res) => {
-  const id = req.params.shortURL;
-  urlDatabase[id].longURL = req.body.longURL;
-  urlDatabase[id].user_id = req.cookies.user_id;
-  console.log(urlDatabase);
-  res.redirect('/urls/' + id);
+  const urlID = req.params.shortURL;
+  const currentUser = req.cookies.user_id;
+  const urlOwner = urlDatabase[urlID].user_id;
+  
+  if (currentUser !== urlOwner) {
+    res.status(403);
+    return res.send('Invalid credentials');
+  }
+
+  urlDatabase[urlID].longURL = req.body.longURL;
+  urlDatabase[urlID].user_id = req.cookies.user_id;
+
+  res.redirect('/urls/' + urlID);
 });
 
 app.post('/urls', (req, res) => {
   let id = generateRandomString();
-  urlDatabase[id] = { longURL: req.body.longURL, user_id: req.cookies.user_id }
+  urlDatabase[id] = { longURL: req.body.longURL, user_id: req.cookies.user_id };
   res.redirect('/urls/' + id);
 });
 
@@ -168,6 +169,13 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
+  const currentUser = req.cookies.user_id;
+  const urlOwner = urlDatabase[req.params.shortURL].user_id;
+  
+  if (currentUser !== urlOwner) {
+    res.status(403);
+    return res.send('Invalid credentials');
+  }
   delete urlDatabase[req.params.shortURL];
   res.redirect('/urls');
 });
