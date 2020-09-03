@@ -4,7 +4,6 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 const morgan = require('morgan');
-const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
 const { findUserByEmail, urlsForUser, generateRandomString } = require('./helpers');
@@ -33,9 +32,8 @@ const users = {
 const app = express();
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
 app.use(morgan('dev'));
-app.use(cookieSession({ secret: process.env.TINYAPP_SECRET || 'examplesecret' }));
+app.use(cookieSession({ secret: process.env.TINYAPP_SECRET || 'examplesecret59kjhwEF2h5WEF' }));
 
 app.listen(PORT, () => {
   console.log(`TinyApp listening on port ${PORT}!`);
@@ -77,8 +75,6 @@ app.get('/urls/:shortURL', (req, res) => {
   const urlID = req.params.shortURL;
   const currentUser = req.session.user_id;
   const urlOwner = urlDatabase[urlID].user_id;
-
-  console.log(urlID, currentUser, urlOwner);
 
   if (currentUser !== urlOwner) {
     res.status(403);

@@ -53,6 +53,7 @@ describe('generateRandomString', () => {
     let min;
     let max;
 
+    // Count the number of occurences of each character which appears in the string
     for (const char of longString) {
       if (results[char] === undefined) {
         results[char] = 0;
@@ -61,6 +62,7 @@ describe('generateRandomString', () => {
       }
     }
 
+    // Find the largest and the smallest character count (which, ideally, should be as close as possible)
     for (const char in results) {
       const count = results[char];
       if (!min && !max) {
@@ -72,7 +74,8 @@ describe('generateRandomString', () => {
       }
     }
 
-    assert.isAbove(min / max, 0.96);
+    // The ratio between the most and least frequent characters' frequencies should be close to 1.
+    assert.isAbove(min / max, 0.95);
   });
 });
 
