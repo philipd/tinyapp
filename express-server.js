@@ -35,6 +35,9 @@ app.listen(PORT, () => {
 
 // GETs
 app.get('/', (req, res) => {
+  if (!req.session.user_id) {
+    return res.redirect('/login');
+  }
   res.redirect('/urls');
 });
 
@@ -43,6 +46,10 @@ app.get('/urls.json', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
+  if (!req.session.user_id) {
+    res.status(403);
+    return res.send("You must log in to view shortened URLs");
+  }
   const user_id = req.session.user_id;
   const user = users[user_id];
   let templateVars = { urls: urlsForUser(user_id, urlDatabase), user };
