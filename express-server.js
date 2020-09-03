@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
+const { findUsersByEmail, urlsForUser, generateRandomString } = require('./helpers');
 
 const PORT = 8080;
 const saltRounds = 10;
@@ -13,7 +14,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan('dev'));
-app.use(cookieSession({ secret: '#(*gnq3j(Q49f3unq93u'})); // TODO: store secret securely!
+app.use(cookieSession({ secret: '#(*gnq3j(Q49f3unq93u' })); // TODO: store secret securely!
 
 const urlDatabase = {
   "b2xVn2": { longURL: "http://www.lighthouselabs.ca", user_id: "aJ48lW" },
@@ -22,41 +23,6 @@ const urlDatabase = {
 
 const users = {
   'aJ48lW': { user_id: 'aJ48lW', email: 's@s.com', password: bcrypt.hashSync('asdf', saltRounds) }
-};
-
-const findUsersByEmail = function (email) {
-  let results = [];
-  for (const user_id in users) {
-    const user = users[user_id];
-    if (user.email === email) {
-      results.push(user);
-    }
-  }
-  return results;
-};
-
-const urlsForUser = function (user_id) {
-  let result = {};
-  for (const url in urlDatabase) {
-    if (urlDatabase[url].user_id === user_id) {
-      result[url] = urlDatabase[url];
-    }
-  }
-  return result;
-};
-
-const generateRandomString = function () {
-  const chars = '23456789qwertyuipasdfghjkzxcvbnmQWERTYUPASDFGHJKLZXCVBNM'; // no ambiguous characters (o, O, 0, I, l, 1)
-  const arrChars = Array.from(chars);
-  let result = '';
-
-  for (let i = 0; i < 6; i++) {
-    let randomNumber = Math.random() * chars.length;
-    randomNumber = Math.floor(randomNumber);
-    result += arrChars[randomNumber];
-  }
-
-  return result;
 };
 
 app.get('/', (req, res) => {
@@ -74,7 +40,7 @@ app.get('/urls.json', (req, res) => {
 app.get('/urls', (req, res) => {
   const user_id = req.session.user_id;
   const user = users[user_id];
-  let templateVars = { urls: urlsForUser(user_id), user };
+  let templateVars = { urls: urlsForUser(user_id, urlDatabase), user };
   res.render('urls-index', templateVars);
 });
 
@@ -119,7 +85,7 @@ app.post('/register', (req, res) => {
     return res.send('You must supply an email and a password');
   }
 
-  if (findUsersByEmail(email).length !== 0) {
+  if (findUsersByEmail(email, users).length !== 0) {
     res.status(400);
     return res.send('A user with that email already exists');
   }
@@ -133,8 +99,8 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
   const password = req.body.password;
   const email = req.body.email;
-  const user = findUsersByEmail(email)[0];
-  if (!user ||  !bcrypt.compareSync(password, user.password)) {
+  const user = findUsersByEmail(email, users)[0];
+  if (!user || !bcrypt.compareSync(password, user.password)) {
     res.status(403);
     return res.send('Invalid credentials');
   }
