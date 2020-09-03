@@ -18,12 +18,12 @@ const urlsForUser = function (user_id, urlDatabase) {
   return result;
 };
 
-const generateRandomString = function () {
-  const chars = '23456789qwertyuipasdfghjkzxcvbnmQWERTYUPASDFGHJKLZXCVBNM'; // no ambiguous characters (o, O, 0, I, l, 1)
+const generateRandomString = function (length) {
+  const chars = '23456789qwertyuipasdfghjkzxcvbnmQWERTYUPASDFGHJKLZXCVBNM'; // no ambiguous characters, i.e.: o, O, 0, I, l, 1
   const arrChars = Array.from(chars);
   let result = '';
 
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < length; i++) {
     let randomNumber = Math.random() * chars.length;
     randomNumber = Math.floor(randomNumber);
     result += arrChars[randomNumber];
