@@ -13,8 +13,10 @@
   <div class="card text-center">
     <div class="card-header"></div>
     <div class="card-body">
-      <h5 class="card-title">TinyURL for: <%= longURL %></h5>
+      <h5 class="card-title">TinyURL for: <%= url.longURL %></h5>
       <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+      <p class="card-text">Total Visits: <%= url.visits.length %></p>
+      <p class="card-text">Unique Visitors: <%= url.visitors.length %></p>
       <form class="form-inline" action="/urls/<%= shortURL %>" method="POST">
         <div class="form-group mb-2">
           <label for="longURL">Change this URL:</label>

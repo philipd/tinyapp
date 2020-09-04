@@ -20,8 +20,8 @@ const idLength = 6;
 // Sample data
 //////////////
 const urlDatabase = {
-  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", user_id: "aJ48lW", visits: 0, visitors: [], timestamp: 1599168878749 },
-  "9sm5xK": { longURL: "http://www.google.com", user_id: "aJ48lW", visits: 0, visitors: [], timestamp: 1598058778749 }
+  "b2xVn2": { longURL: "http://www.lighthouselabs.ca", user_id: "aJ48lW", visits: [], visitors: [], timestamp: 1599168878749 },
+  "9sm5xK": { longURL: "http://www.google.com", user_id: "aJ48lW", visits: [], visitors: [], timestamp: 1598058778749 }
 };
 const users = {
   'aJ48lW': { user_id: 'aJ48lW', email: 's@s.com', password: bcrypt.hashSync('asdf', saltRounds) }
@@ -90,7 +90,7 @@ app.get('/urls/:shortURL', (req, res) => {
   const user = users[user_id];
   let templateVars = {
     shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
+    url: urlDatabase[req.params.shortURL],
     user
   };
 
@@ -123,12 +123,15 @@ app.get('/login', (req, res) => {
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const url = urlDatabase[shortURL];
+  let visitor_id = req.session.visitor_id || generateRandomString(6);
 
-  url.visits += 1;
-  if (!url.visitors.includes(req.ip)) {
-    url.visitors.push(req.ip);
+  url.visits.push({ visitor_id, time: Date.now() });
+
+  if (!url.visitors.includes(visitor_id)) {
+    url.visitors.push(visitor_id);
   }
 
+  req.session.visitor_id = visitor_id;
   res.redirect(url.longURL);
 });
 
