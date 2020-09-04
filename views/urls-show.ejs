@@ -17,6 +17,22 @@
       <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
       <p class="card-text">Total Visits: <%= url.visits.length %></p>
       <p class="card-text">Unique Visitors: <%= url.visitors.length %></p>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Visitor ID</th>
+            <th scope="col">Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% for(let visit in url.visits) { %>
+          <tr>
+            <td><%= url.visits[visit].visitor_id %></td>
+            <td><%= ( new Date(url.visits[visit].time)).toString() %></td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
       <form class="form-inline" action="/urls/<%= shortURL %>" method="POST">
         <div class="form-group mb-2">
           <label for="longURL">Change this URL:</label>

@@ -217,7 +217,7 @@ app.put('/urls', (req, res) => {
   urlDatabase[urlID] = {
     longURL: req.body.longURL,
     user_id: req.session.user_id,
-    visits: 0,
+    visits: [],
     visitors: [],
     timestamp: Date.now()
   };
